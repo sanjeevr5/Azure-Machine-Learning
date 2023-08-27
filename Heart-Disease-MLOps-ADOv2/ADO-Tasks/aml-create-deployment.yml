@@ -1,0 +1,22 @@
+parameters:
+- name: endpoint_type
+  type: string
+- name: deployment_name
+  type: string
+- name: deployment_file
+  type: string
+- name: endpoint
+  type: string
+
+steps:
+  - task: AzureCLI@2
+    displayName: Create deployment
+    continueOnError: true
+    inputs: 
+      azureSubscription: $(service_connection_rg)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -o xtrace
+        az ml ${{ parameters.endpoint_type }}-deployment create --name ${{ parameters.deployment_name }} --endpoint ${{ parameters.endpoint }} \
+          -f ${{ parameters.deployment_file}}

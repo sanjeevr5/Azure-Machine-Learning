@@ -1,0 +1,3 @@
+name: heart-disease-prediction-online
+description: Heart disease prediction online pipeline
+auth_mode: key

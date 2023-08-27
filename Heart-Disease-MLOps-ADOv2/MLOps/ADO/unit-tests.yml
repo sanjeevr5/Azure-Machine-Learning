@@ -1,0 +1,16 @@
+trigger:
+  paths:
+    include:
+    - AzureML/*
+pool:
+  vmImage: 'ubuntu-latest'
+stages :
+  - stage: UnitTest
+    displayName: Run Unit Test
+    jobs:
+    - job: RunUnitTest
+      displayName: Run unit tests
+      steps:
+      - checkout: self
+        path: s/
+      - template: /ADO-Tasks/tests/unit-tests.yml

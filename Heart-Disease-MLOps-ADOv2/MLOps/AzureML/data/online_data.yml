@@ -1,0 +1,5 @@
+name: heart-disease-online
+description: Heart disease prediction online data
+type: uri_file
+version: 1
+path: https://raw.githubusercontent.com/Azure/azureml-examples/main/sdk/python/endpoints/batch/deploy-pipelines/training-with-components/data/train/heart.csv

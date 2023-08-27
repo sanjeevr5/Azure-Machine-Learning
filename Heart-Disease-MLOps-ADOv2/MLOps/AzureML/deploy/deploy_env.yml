@@ -1,0 +1,4 @@
+image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
+conda_file: ../../../AzureML/environment/serve_conda.yml
+description: Custom environment for online serving
+version: 0.1.0

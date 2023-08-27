@@ -1,0 +1,42 @@
+variables:
+- group: heart-disease-mlops
+trigger:
+- none
+pool:
+  vmImage: 'ubuntu-latest'
+stages:
+- stage: RunDeployPipeline
+  displayName: Run Online Deploy Pipeline
+  jobs:
+    - job: DeployOnlineEndpoint
+      timeoutInMinutes: 120
+      steps:
+      - checkout: self
+        path: s/ #Source folder
+        #Install Azure CLI v2
+      - template: /ADO-Tasks/install-cli-v2.yml
+        #Install Azure ML CLI
+      - template: /ADO-Tasks/install-aml-cli.yml
+        #Connect to AML Workspace
+      - template: /ADO-Tasks/aml-workspace-connect.yml
+        #Register Environment
+      - template: /ADO-Tasks/aml-create-environment.yml
+        #Create cluster compute
+        parameters:
+          build_type: conda
+          environment_name: heart-disease-serve
+          environment_file: MLOps/AzureML/deploy/deploy_env.yml
+      - template: /ADO-Tasks/aml-create-endpoint.yml
+        #Creating an online endpoint
+        parameters:
+          endpoint_type: online
+          endpoint_name: heart-disease-prediction-online
+          endpoint_file: MLOps/AzureML/deploy/online-endpoint.yml
+      - template: /ADO-Tasks/aml-create-deployment.yml
+        #Deploy the online endpoint
+        parameters:
+          endpoint_type: online
+          deployment_name:  heart-disease-prediction-deploy
+          deployment_file: MLOps/AzureML/deploy/online-deployment.yml
+          endpoint: heart-disease-prediction-online
+      

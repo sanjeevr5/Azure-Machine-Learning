@@ -1,0 +1,10 @@
+channels:
+- conda-forge
+dependencies:
+- python=3.10
+- pip
+- pip:
+  - numpy==1.24.3
+  - onnxruntime==1.15.0
+  - inference-schema==1.5.1
+  - azureml-inference-server-http==0.8.4

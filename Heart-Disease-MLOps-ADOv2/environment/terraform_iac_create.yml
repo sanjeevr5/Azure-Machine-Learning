@@ -1,0 +1,73 @@
+# CI/PR Pipeline that deploys an TF template to create or update the resources needed by the other pipelines.
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - environment/tf-iac/*
+pr:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - environment/tf-iac/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: heart-disease-mlops
+
+steps:
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+  displayName: 'Use Terraform 1.5.2'
+  inputs:
+    terraformVersion: 1.5.2
+
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-cli.TerraformCLI@0
+  displayName: 'TF init - Deploy MLOps resources to Azure'
+  inputs:
+    command: init
+    commandOptions: '-input=false'
+    workingDirectory: '$(Build.SourcesDirectory)/environment/tf-iac'
+    backendType: azurerm
+    backendServiceArm: $(service_connection_rg)
+    ensureBackend: true
+    backendAzureRmResourceGroupLocation: $(LOCATION)
+    backendAzureRmResourceGroupName: $(resource_group)
+    backendAzureRmStorageAccountName: '$(BASE_NAME)statestor'
+    backendAzureRmStorageAccountSku: 'Standard_LRS'
+    backendAzureRmContainerName: 'tfstate-cont'
+    backendAzureRmKey: 'mlopsinfra.tfstate'
+
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-cli.TerraformCLI@0
+  displayName: 'TF validate - Deploy MLOps resources to Azure'
+  inputs:
+    command: validate
+    workingDirectory: '$(Build.SourcesDirectory)/environment/tf-iac'
+
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-cli.TerraformCLI@0
+  displayName: 'TF plan - Deploy MLOps resources to Azure'
+  inputs:
+    command: plan
+    commandOptions: '-input=false'
+    workingDirectory: '$(Build.SourcesDirectory)/environment/tf-iac'
+    environmentServiceName: $(service_connection_rg)
+  env:
+    TF_VAR_BASE_NAME: $(BASE_NAME)
+    TF_VAR_RG: $(resource_group)
+    TF_VAR_WS_NAME: $(aml_workspace)
+
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-cli.TerraformCLI@0
+  displayName: 'TF apply - Deploy MLOps resources to Azure'
+  inputs:
+    command: apply
+    commandOptions: '-input=false'
+    workingDirectory: '$(Build.SourcesDirectory)/environment/tf-iac'
+    environmentServiceName: $(service_connection_rg)
+  env:
+    TF_VAR_BASE_NAME: $(BASE_NAME)
+    TF_VAR_RG: $(resource_group)
+    TF_VAR_WS_NAME: $(aml_workspace)

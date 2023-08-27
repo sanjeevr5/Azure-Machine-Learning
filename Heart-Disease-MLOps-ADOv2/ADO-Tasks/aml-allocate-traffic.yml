@@ -1,0 +1,18 @@
+#Allocates traffic to the online endpoint
+
+parameters:
+  - name: traffic_allocation
+    type: string
+
+steps:
+  - task: AzureCLI@2
+    displayName: Update traffic allocation
+    inputs:
+      azureSubscription: $(service_connection_rg)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -e
+        az ml online-endpoint update --name $(endpoint_name) --traffic "${{parameters.traffic_allocation}}"
+        
+

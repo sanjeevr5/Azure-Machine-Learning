@@ -1,0 +1,49 @@
+type: pipeline
+name: heart_disease_classification_e2e_pipeline
+description: E2E Heart Disease Classification Model
+settings:
+    default_compute: azureml:train-clusterx101
+jobs:
+    data_processing:
+        type: command
+        inputs:
+            raw_data:
+                type: uri_file
+                path: azureml:heart-disease-online@latest
+        outputs:
+            prepared_data:
+            transformations_output:
+        component: ./preprocess.yml
+    train_and_sweep:
+        type: sweep
+        inputs:
+            data: ${{parent.jobs.data_processing.outputs.prepared_data}}
+            max_depth: 3
+            scale_pos_weight: 99
+        trial: ./train.yml
+        sampling_algorithm: random
+        search_space:
+            max_depth:
+                type: choice
+                values: [2, 3]
+            scale_pos_weight:
+                type: choice
+                values: [99, 98]
+        objective:
+            goal: maximize
+            primary_metric: mathews_coref
+        limits:
+            max_total_trials: 2
+            max_concurrent_trials: 2
+            timeout: 6000
+        outputs:
+            model_folder:
+    hosting:
+        type: command
+        inputs:
+            data: ${{parent.jobs.data_processing.outputs.prepared_data}}
+            feat_transformer_path: ${{parent.jobs.data_processing.outputs.transformations_output}}
+            model_path: ${{parent.jobs.train_and_sweep.outputs.model_folder}}
+        outputs:
+            model_pipeline:
+        component: ./register.yml

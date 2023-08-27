@@ -1,0 +1,54 @@
+variables:
+- group: heart-disease-mlops
+trigger:
+- none
+pool:
+  vmImage: 'ubuntu-latest'
+stages:
+- stage: RunTrainingPipeline
+  displayName: Run Training Pipeline
+
+  jobs:
+    - job: DeployDevTrainingPipeline
+      timeoutInMinutes: 120
+      steps:
+      - checkout: self
+        path: s/ #Source folder
+        #Install Azure CLI v2
+      - template: /ADO-Tasks/install-cli-v2.yml
+        #Install Azure ML CLI
+      - template: /ADO-Tasks/install-aml-cli.yml
+        #Connect to AML Workspace
+      - template: /ADO-Tasks/aml-workspace-connect.yml
+        #Register Environment
+      - template: /ADO-Tasks/aml-create-environment.yml
+        #Create cluster compute
+        parameters:
+          build_type: conda
+          environment_name: heart-disease-train
+          environment_file: MLOps/AzureML/train/train_env.yml
+      - template: /ADO-Tasks/aml-register-data.yml
+        #Registering the base data
+        parameters:
+          data_type: uri_file
+          data_name: heart-disease-baseline
+          data_file: MLOps/AzureML/data/baseline_data.yml
+      - template: /ADO-Tasks/aml-register-data.yml
+        #Registering the online data
+        parameters:
+          data_type: uri_file
+          data_name: heart-disease-online
+          data_file: MLOps/AzureML/data/online_data.yml
+      - template: /ADO-Tasks/aml-create-compute.yml
+        parameters:
+          cluster_name: $(train_cluster_name)
+          size: $(train_cluster_sku)
+          min_instances: 1 #Passing variables from variable group is always a string value
+          max_instances: 1
+          tier: dedicated
+        #Run the pipeline
+      - template: /ADO-Tasks/aml-run-pipeline.yml
+        parameters:
+          pipeline_file: MLOps/AzureML/train/train_pipeline.yml
+          experiment_name: heart_disease_classification_train
+          display_name: test_heart_disease_run_$(Build.BuildID)

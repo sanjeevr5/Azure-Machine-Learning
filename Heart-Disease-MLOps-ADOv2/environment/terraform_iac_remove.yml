@@ -1,0 +1,19 @@
+# Pipeline that removes the resources created by the IaC Create Environment pipeline.
+pr: none
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: heart-disease-mlops
+
+steps:
+- task: AzureResourceGroupDeployment@2
+  inputs:
+    azureSubscription: '$(service_connection_rg)'
+    action: 'DeleteRG'
+    resourceGroupName: '$(resource_group)'
+    location: $(LOCATION)
+  displayName: 'Delete resources in Azure'
+  

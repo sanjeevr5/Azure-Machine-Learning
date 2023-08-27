@@ -1,0 +1,5 @@
+resource_group_name="1-67c44ab5-playground-sandbox"
+storage_account_name="mnxsda2"
+container_name="statefiles"
+key="prod.terraform.tfstate"
+sas_token="?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2023-03-05T23:26:44Z&st=2023-03-05T15:26:44Z&spr=https&sig=c3LOBLLiLqe45U2iFgO4z9VS9l5bDM3Es449NyQvohk%3D"

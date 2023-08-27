@@ -1,0 +1,9 @@
+name: heart-disease-online-deployment
+endpoint_name: heart-disease-prediction-online
+model: azureml:heart_disease_prediction_model@latest
+instance_type: Standard_DS2_v2
+instance_count: 1
+app_insights_enabled: true
+code_configuration:
+  code: ../../../AzureML/src/scoring
+  scoring_script: scoring.py
